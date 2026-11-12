@@ -181,6 +181,9 @@ h1, h2 { font-family:"Cormorant Garamond",Georgia,"Times New Roman",serif; font-
 .cor-opcao[aria-pressed="true"] { border-color:var(--marca); background:var(--marca-clara); box-shadow:0 0 0 1px var(--marca); }
 .cor-opcao:focus-visible { outline:2px solid var(--marca); outline-offset:2px; }
 .slide[hidden] { display:none; }
+.cores-topo { display:flex; align-items:center; gap:10px; margin:0 0 9px; }
+.cores-topo .cores-rotulo { margin:0; }
+.cores-foto { width:46px; height:46px; flex:none; border-radius:10px; object-fit:cover; background:var(--marca-clara); }
 
 /* ---------- Preco e botao ---------- */
 .preco { margin:22px 0 14px; display:flex; align-items:baseline; flex-wrap:wrap; gap:4px 10px; }
@@ -635,6 +638,11 @@ h2 { font-size:1.75rem; margin-bottom:16px; }
     $$(".cor-opcao").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute("data-id") === v.id); });
     if (!esgotado) $$("[data-comprar]").forEach(function (a) { a.href = v.link; });
     montar(v.id);
+    var foto = slides[0] && slides[0].querySelector("img");
+    $$(".cores-foto").forEach(function (m) {
+      if (!foto) m.hidden = true;
+      else if (m.getAttribute("src") !== foto.getAttribute("src")) m.src = foto.getAttribute("src");
+    });
     if (manual) {
       evento("escolher cor #secadora-5em1", { cor: v.nome });
       try { var u = new URL(location.href); u.searchParams.set("cor", v.id); history.replaceState(null, "", u.href); } catch (e) {}
@@ -643,7 +651,12 @@ h2 { font-size:1.75rem; margin-bottom:16px; }
   var rotulo = C.rotuloCor || "Cor";
   $$("[data-cores]").forEach(function (caixa) {
     if (cores.length < 2) { caixa.remove(); return; }
-    caixa.innerHTML = '<p class="cores-rotulo">' + rotulo + ': <b data-var="nome"></b></p><div class="cores-lista" role="group"></div>';
+    var rot = '<p class="cores-rotulo">' + rotulo + ': <b data-var="nome"></b></p>';
+    /* na caixa da oferta mostra uma fotinho da cor escolhida, ja que o carrossel fica fora da tela */
+    if (caixa.closest(".caixa-oferta")) rot = '<div class="cores-topo"><img class="cores-foto" alt="" hidden>' + rot + '</div>';
+    caixa.innerHTML = rot + '<div class="cores-lista" role="group"></div>';
+    var mini = caixa.querySelector(".cores-foto");
+    if (mini) { mini.onload = function () { mini.hidden = false; }; mini.onerror = function () { mini.hidden = true; }; }
     var lista = caixa.querySelector(".cores-lista");
     lista.setAttribute("aria-label", "Escolha a " + rotulo.toLowerCase());
     cores.forEach(function (v) {
